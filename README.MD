@@ -29,6 +29,34 @@ run_http_server()
 
 
 You can generate teh certificate and the key using this bash script also
+But you have to create the ```req.conf``` config file first
+
+
+```
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+[req_distinguished_name]
+C = RU
+ST = MOW
+L = Moscow
+O = Akon
+OU = Support
+CN = www.test.ru
+[v3_req]
+keyUsage = keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = www.test.ru
+DNS.2 = test.ru
+DNS.3 = www.test.net
+DNS.4 = test.net
+	
+```
+
+
 
 ```
 #!/bin/bash
@@ -70,7 +98,5 @@ rm server.crt
 echo "SSL certificate and private key generated successfully!"
 
 echo "SSL certificate and private key generated successfully!"
-
-
 
 ```
