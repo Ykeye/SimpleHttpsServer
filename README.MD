@@ -65,6 +65,9 @@ DNS.4 = test.net
 
 openssl genpkey -algorithm RSA -out server.key
 
+openssl req -new -newkey rsa:2048 -days 365 -extensions v3_ca -subj "/C=RU/ST=mow/L=Moscow/O=Akon/OU=Cpsupport/CN=Authority/" -nodes -x509 -sha256 -set_serial 0 -keyout root_key.key -out root_cer.cer
+
+
 # Generate a certificate signing request (CSR)
 
 openssl req -new -newkey rsa:2048 -nodes -sha256 -keyout server.key -out server.csr -config req.conf
@@ -73,30 +76,38 @@ openssl req -new -newkey rsa:2048 -nodes -sha256 -keyout server.key -out server.
 
 # Generate a self-signed certificate valid for 365 days
 
-openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt -extfile req.conf -extensions v3_req
+openssl x509 -req -sha256 -CAcreateserial -days 365 -in server.csr -CA root_cer.cer -CAkey root_key.key -out server.cer -extfile req.conf -extensions v3_req 
 
 
 
 # Display the generated certificate information
 
-openssl x509 -in server.crt -noout -text
+openssl x509 -in root_cer.cer -noout -text
+openssl x509 -in server.cer -noout -text
 
+openssl x509 -in server.cer -out server.pem -outform PEM
+openssl x509 -in root_cer.cer -out root_cer.pem -outform PEM
 
+echo -e "\n\n\n"
 
-openssl x509 -in server.crt -out server.pem -outform PEM
+openssl verify -CAfile root_cer.pem server.pem
+
+cat server.pem > bundle.pem
+cat root_cer.pem >> bundle.pem
+
+echo Finised a Bundle
+
+openssl verify -CAfile root_cer.cer bundle.pem
 
 
 
 # Clean up the certificate signing request
 
 rm server.csr
+rm server.cer
+rm root_cer.cer
 
-rm server.crt
-
-
-
-echo "SSL certificate and private key generated successfully!"
 
 echo "SSL certificate and private key generated successfully!"
-
+echo "Import the bundle.pem file by itself and split it after using text editor or just copy server.pem and root_cer.pem to your local machine and import it into Trusted Ca Registry"
 ```
