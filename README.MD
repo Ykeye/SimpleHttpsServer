@@ -34,26 +34,40 @@ You can generate teh certificate and the key using this bash script also
 #!/bin/bash
 
 
-# Set the common name for the certificate
-COMMON_NAME="10.133.81.60"
 
-# Generate a private key
 openssl genpkey -algorithm RSA -out server.key
 
 # Generate a certificate signing request (CSR)
-openssl req -new -key server.key -subj "/CN=${COMMON_NAME}" -out server.csr
+
+openssl req -new -newkey rsa:2048 -nodes -sha256 -keyout server.key -out server.csr -config req.conf
+
+
 
 # Generate a self-signed certificate valid for 365 days
-openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt -extfile req.conf -extensions v3_req
+
+
 
 # Display the generated certificate information
+
 openssl x509 -in server.crt -noout -text
+
+
 
 openssl x509 -in server.crt -out server.pem -outform PEM
 
+
+
 # Clean up the certificate signing request
+
 rm server.csr
+
 rm server.crt
+
+
+
+echo "SSL certificate and private key generated successfully!"
 
 echo "SSL certificate and private key generated successfully!"
 
